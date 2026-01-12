@@ -51,10 +51,6 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    .glow-hover:hover {
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-      border-color: rgba(139, 92, 246, 0.5);
-    }
     /* Custom Leaflet Dark Mode Style */
     .leaflet-container {
       background: #0a0f1e !important;
@@ -62,25 +58,15 @@
     .leaflet-tile {
       filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
     }
-    .leaflet-control-zoom {
-      border: none !important;
-      border-radius: 1rem !important;
-      overflow: hidden;
-    }
-    .leaflet-control-zoom-in, .leaflet-control-zoom-out {
-      background: rgba(255,255,255,0.05) !important;
-      color: white !important;
-      border: 1px solid rgba(255,255,255,0.1) !important;
-      backdrop-filter: blur(10px);
-    }
   </style>
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
@@ -88,5 +74,8 @@
 <body>
   <div class="animated-bg"></div>
   <div id="root"></div>
+  <!-- Use data-type="module" to allow esm.sh to handle the TSX on the fly if needed, 
+       or simply point to the entry file -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
