@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Artisan, TradeType, ViewType, Booking } from './types';
-import { ARTISANS, CATEGORIES, Icons } from './constants';
-import { ArtisanCard } from './components/ArtisanCard';
-import { BookingModal } from './components/BookingModal';
+import { Artisan, TradeType, ViewType, Booking } from './types.ts';
+import { ARTISANS, CATEGORIES, Icons } from './constants.tsx';
+import { ArtisanCard } from './components/ArtisanCard.tsx';
+import { BookingModal } from './components/BookingModal.tsx';
 
 declare var L: any;
 
@@ -72,7 +72,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Fix for line 283: Defined handleBookArtisan to manage the selection and opening of the booking flow
   const handleBookArtisan = (artisan: Artisan) => {
     if (isOutOfRange) {
       setShowBoundaryWarning(true);
@@ -213,7 +212,6 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen relative font-['Poppins'] select-none overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       
-      {/* Artisan Preview Overlay */}
       {previewArtisan && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in zoom-in duration-200" onClick={() => setPreviewArtisan(null)}>
            <div className="glass p-8 rounded-[3rem] text-center space-y-4 max-w-xs border border-white/20">
@@ -225,7 +223,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Booking Modal */}
       <BookingModal 
         artisan={selectedArtisan} 
         isOpen={isBookingModalOpen} 
@@ -233,7 +230,6 @@ const App: React.FC = () => {
         onConfirm={confirmBooking} 
       />
 
-      {/* Notifications Drawer */}
       <div className={`fixed inset-0 z-[250] transition-opacity duration-300 ${showNotificationsDrawer ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={() => setShowNotificationsDrawer(false)}></div>
         <div className={`absolute top-0 right-0 h-full w-[85%] max-w-sm glass-dark shadow-[-20px_0_50px_rgba(0,0,0,0.5)] border-l border-white/10 transition-transform duration-500 ease-out transform ${showNotificationsDrawer ? 'translate-x-0' : 'translate-x-full'}`}>

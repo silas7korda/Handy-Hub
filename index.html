@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Added Babel to transpile TSX in the browser for GitHub Pages compatibility -->
+  <!-- Babel standalone for browser-side JSX/TSX transpilation -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     body {
@@ -32,13 +32,8 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .hide-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .animated-bg {
       background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e293b);
       background-size: 400% 400%;
@@ -53,14 +48,10 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    .leaflet-container {
-      background: #0a0f1e !important;
-    }
-    .leaflet-tile {
-      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-    }
+    .leaflet-container { background: #0a0f1e !important; }
+    .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@19.0.0",
@@ -75,7 +66,97 @@
 <body>
   <div class="animated-bg"></div>
   <div id="root"></div>
-  <!-- type="text/babel" and data-type="module" tells Babel to compile this TSX file -->
-  <script type="text/babel" data-type="module" src="./index.tsx"></script>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useRef } from 'react';
+    import ReactDOM from 'react-dom/client';
+
+    // Constants & Mock Data
+    const ARTISANS = [
+      { id: '1', name: 'Julian Vance', trade: 'Electrician', rating: 4.9, reviews: 124, image: 'https://picsum.photos/seed/juli/200', distance: '1.2 km', bio: 'Master electrician.' },
+      { id: '2', name: 'Sarah Chen', trade: 'Plumber', rating: 4.8, reviews: 89, image: 'https://picsum.photos/seed/sarah/200', distance: '0.8 km', bio: 'Leak detection expert.' },
+      { id: '3', name: 'Marcus Thorne', trade: 'Carpenter', rating: 4.7, reviews: 210, image: 'https://picsum.photos/seed/marc/200', distance: '3.5 km', bio: 'Custom furniture.' },
+      { id: '4', name: 'Elena Rodriguez', trade: 'Painter', rating: 5.0, reviews: 56, image: 'https://picsum.photos/seed/elena/200', distance: '2.1 km', bio: 'Interior specialist.' }
+    ];
+
+    const Icons = {
+      Home: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+      Booking: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+      Search: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+      Track: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+      Account: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+    };
+
+    const App = () => {
+      const [activeTab, setActiveTab] = useState('Home');
+      const [isExploreOpen, setIsExploreOpen] = useState(false);
+      const [bookings, setBookings] = useState([]);
+      const mapContainerRef = useRef(null);
+      const mapRef = useRef(null);
+
+      useEffect(() => {
+        if (activeTab === 'Home' && mapContainerRef.current && !mapRef.current) {
+          mapRef.current = L.map(mapContainerRef.current, { zoomControl: false }).setView([5.6037, -0.1870], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapRef.current);
+          
+          ARTISANS.forEach(a => {
+             const icon = L.divIcon({
+               html: `<div class="w-10 h-10 rounded-full border-2 border-violet-500 overflow-hidden shadow-lg"><img src="${a.image}" class="w-full h-full object-cover"></div>`,
+               className: '', iconSize: [40, 40]
+             });
+             L.marker([5.6037 + (Math.random()-0.5)*0.02, -0.1870 + (Math.random()-0.5)*0.02], {icon}).addTo(mapRef.current);
+          });
+        }
+      }, [activeTab]);
+
+      return (
+        <div className="min-h-screen text-white">
+          {activeTab === 'Home' && (
+            <div className="fixed inset-0">
+              <div ref={mapContainerRef} className="absolute inset-0 z-0"></div>
+              <div className="absolute top-10 left-0 right-0 px-6 z-10">
+                <div className="glass h-16 rounded-full flex items-center justify-between px-6">
+                  <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/20"></div>
+                  <div className="text-sm font-bold tracking-widest text-violet-400">HANDYHUB</div>
+                  <div className="w-10 h-10 flex items-center justify-center"><Icons.Search /></div>
+                </div>
+              </div>
+
+              <div className={`fixed inset-x-0 bottom-0 z-20 transition-transform duration-500 ${isExploreOpen ? 'translate-y-0' : 'translate-y-[75%]'}`}>
+                <div className="glass-dark rounded-t-[3rem] h-[80vh] p-8 border-t border-white/10 shadow-2xl">
+                  <div className="w-12 h-1 bg-white/20 mx-auto mb-6 rounded-full cursor-pointer" onClick={() => setIsExploreOpen(!isExploreOpen)}></div>
+                  <h2 className="text-2xl font-bold mb-6">Nearby Artisans</h2>
+                  <div className="grid grid-cols-1 gap-4 overflow-y-auto h-full pb-32 hide-scrollbar">
+                    {ARTISANS.map(a => (
+                      <div key={a.id} className="glass p-4 rounded-3xl flex items-center space-x-4 border border-white/5">
+                        <img src={a.image} className="w-16 h-16 rounded-2xl object-cover" />
+                        <div className="flex-1">
+                          <h4 className="font-bold">{a.name}</h4>
+                          <p className="text-xs text-violet-400 font-medium">{a.trade}</p>
+                        </div>
+                        <button className="bg-violet-600 px-4 py-2 rounded-xl text-xs font-bold">BOOK</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm">
+            <div className="glass rounded-full px-8 py-4 flex items-center justify-between border border-white/10 shadow-2xl">
+              <button onClick={() => setActiveTab('Home')} className={activeTab === 'Home' ? 'text-violet-400' : 'text-slate-500'}><Icons.Home /></button>
+              <button onClick={() => setActiveTab('Booking')} className={activeTab === 'Booking' ? 'text-violet-400' : 'text-slate-500'}><Icons.Booking /></button>
+              <button onClick={() => setActiveTab('Track')} className={activeTab === 'Track' ? 'text-violet-400' : 'text-slate-500'}><Icons.Track /></button>
+              <button onClick={() => setActiveTab('Account')} className={activeTab === 'Account' ? 'text-violet-400' : 'text-slate-500'}><Icons.Account /></button>
+            </div>
+          </nav>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
