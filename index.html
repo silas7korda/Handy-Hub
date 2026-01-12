@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Added Babel to transpile TSX in the browser for GitHub Pages compatibility -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -51,7 +53,6 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    /* Custom Leaflet Dark Mode Style */
     .leaflet-container {
       background: #0a0f1e !important;
     }
@@ -74,8 +75,7 @@
 <body>
   <div class="animated-bg"></div>
   <div id="root"></div>
-  <!-- Use data-type="module" to allow esm.sh to handle the TSX on the fly if needed, 
-       or simply point to the entry file -->
-  <script type="module" src="./index.tsx"></script>
+  <!-- type="text/babel" and data-type="module" tells Babel to compile this TSX file -->
+  <script type="text/babel" data-type="module" src="./index.tsx"></script>
 </body>
 </html>
