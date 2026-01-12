@@ -1,0 +1,7 @@
+{
+  "name": "HandyHub",
+  "description": "A sleek, glassmorphic platform for connecting with local artisans and service providers with real-time tracking and intuitive navigation.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
